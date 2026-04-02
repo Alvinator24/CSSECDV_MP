@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabase";
+import { verifyToken } from "@/lib/jwt";
 import { z } from "zod";
 import bcrypt from "bcrypt";
 
@@ -14,8 +15,23 @@ const createUserSchema = z.object({
   role: z.string("Must be a valid role")
 });
 
-export async function GET() {
+async function requireAuth(req: Request, allowedRoles: string[] = []) {
+  const token = req.headers.get("Authorization")?.replace("Bearer ", "");
+  if (!token) throw new Error("Unauthorized");
+
+  const user = verifyToken(token);
+  if (!user) throw new Error("Unauthorized");
+
+  if (allowedRoles.length && !allowedRoles.includes(user.role)) {
+    throw new Error("Forbidden");
+  }
+
+  return user;
+}
+
+export async function GET(req: Request) {
   try {
+    await requireAuth(req, ["admin", "manager"]);
     const { data, error } = await supabaseServer
       .from("users")
       .select("firstname, lastname, email, role")
@@ -38,6 +54,7 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
+    await requireAuth(req, ["admin"]);
     const body = await req.json();
     const result = createUserSchema.safeParse(body);
 
