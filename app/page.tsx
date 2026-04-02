@@ -1,11 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [message, setMessage] = useState<string>("");
+
+  const router = useRouter();
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
@@ -19,13 +22,17 @@ export default function LoginPage() {
         body: JSON.stringify({ email, password }),
       });
 
-      const data: { message?: string; error?: string } = await res.json();
+      const data = await res.json();
 
       if (res.ok) {
         setMessage("Login successful!");
       } else {
         setMessage(data.error || "Login failed");
       }
+
+      if (data.role === "admin") router.push("/admin");
+      else if (data.role === "manager") router.push("/manager");
+      else if (data.role === "developer") router.push("/developer");
     } catch (err) {
       setMessage("Something went wrong");
     }
