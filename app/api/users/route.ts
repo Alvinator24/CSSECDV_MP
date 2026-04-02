@@ -1,12 +1,24 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
+import { z } from "zod";
+import bcrypt from "bcrypt";
+
+const createUserSchema = z.object({
+  email: z.email("Invalid email"),
+  firstname: z.string().min(2, "Name must be at least 2 characters"),
+  lastname: z.string().min(2, "Name must be at least 2 characters"),
+  password: z.string()
+              .min(8, "Password must be at least 8 characters")
+              .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/,
+              "Password must include uppercase, lowercase, number, and special character"),
+  role: z.string("Must be a valid role")
+});
 
 export async function GET() {
   try {
     const { data, error } = await supabase
       .from("users")
-      .select("id, firstname, lastname, email, role")
-      .order("created_at", { ascending: false });
+      .select("firstname, lastname, email, role")
 
     if (error) {
       return NextResponse.json(
@@ -27,14 +39,17 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { firstname, lastname, email, password, role } = body;
+    const result = createUserSchema.safeParse(body);
 
-    if (!email || !firstname || !lastname || !password || !role) {
+    if (!result.success) {
       return NextResponse.json(
-        { error: "All fields are required" },
+        { error: result.error },
         { status: 400 }
       );
     }
+
+    const { firstname, lastname, email, password, role } = result.data;
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     const { data, error } = await supabase
       .from("users")
@@ -43,7 +58,7 @@ export async function POST(req: Request) {
           firstname,
           lastname,
           email,
-          password,
+          password: hashedPassword,
           role
         },
       ])
