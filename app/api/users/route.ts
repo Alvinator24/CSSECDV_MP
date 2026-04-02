@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabase";
+import { cookies } from "next/headers";
 import { verifyToken } from "@/lib/jwt";
 import { z } from "zod";
 import bcrypt from "bcrypt";
@@ -15,27 +16,31 @@ const createUserSchema = z.object({
   role: z.string("Must be a valid role")
 });
 
-async function requireAuth(req: Request, allowedRoles: string[] = []) {
-  const token = req.headers.get("Authorization")?.replace("Bearer ", "");
+async function requireAuth() {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("token")?.value;
   if (!token) throw new Error("Unauthorized");
 
   const user = verifyToken(token);
   if (!user) throw new Error("Unauthorized");
 
-  if (allowedRoles.length && !allowedRoles.includes(user.role)) {
-    throw new Error("Forbidden");
-  }
-
   return user;
 }
 
-export async function GET(req: Request) {
+export async function GET() {
   try {
-    await requireAuth(req, ["admin", "manager"]);
-    const { data, error } = await supabaseServer
-      .from("users")
-      .select("firstname, lastname, email, role")
+    const user = await requireAuth();
 
+    if (!["admin", "manager"].includes(user.role)) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    let query = supabaseServer.from("users").select("firstname, lastname, email, role");
+    if (user.role === "manager") {
+      query = query.eq("role", "developer");
+    }
+
+    const { data, error } = await query;
     if (error) {
       return NextResponse.json(
         { error: error.message },
@@ -54,7 +59,7 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
-    await requireAuth(req, ["admin"]);
+    await requireAuth();
     const body = await req.json();
     const result = createUserSchema.safeParse(body);
 
