@@ -51,6 +51,14 @@ export default function AdminUsersClient() {
     fetchUsers();
   }, []);
 
+  const handleLogout = async () => {
+    await fetch("/api/logout", {
+      method: "POST",
+    });
+
+    window.location.href = "/";
+  };
+
   const handleCreateUser = async (e: any) => {
     e.preventDefault();
     setLoading(true);
@@ -98,13 +106,21 @@ export default function AdminUsersClient() {
       {/* Header */}
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">Users</h1>
-        <button
-          onClick={() => setShowModal(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
-        >
-          <Plus className="w-4 h-4" />
-          New User
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setShowModal(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+          >
+            <Plus className="w-4 h-4" />
+            New User
+          </button>
+          <button
+            onClick={handleLogout}
+            className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
+          >
+            Logout
+          </button>
+        </div>
       </div>
 
       {/* Users Grid */}
