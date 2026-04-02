@@ -40,7 +40,7 @@ export default function AdminUsers() {
           throw new Error(data.error || "Failed to fetch users");
         }
 
-        console.log(data)
+        // console.log(data)
 
         setUsers(data);
       } catch (err: any) {
@@ -112,7 +112,7 @@ export default function AdminUsers() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {users.map((user) => (
             <div
-              key={user.id}
+              key={user.id ?? `${user.email}-${Date.now()}`}
               className="border rounded-2xl p-6 shadow-sm hover:shadow-md transition"
             >
               <h2 className="text-xl font-semibold mb-2">

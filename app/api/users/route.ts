@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
+import { supabaseServer } from "@/lib/supabase";
 import { z } from "zod";
 import bcrypt from "bcrypt";
 
@@ -16,7 +16,7 @@ const createUserSchema = z.object({
 
 export async function GET() {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseServer
       .from("users")
       .select("firstname, lastname, email, role")
 
@@ -51,7 +51,7 @@ export async function POST(req: Request) {
     const { firstname, lastname, email, password, role } = result.data;
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseServer
       .from("users")
       .insert([
         {
