@@ -10,6 +10,14 @@ type Task = {
   status: string;
 };
 
+const handleLogout = async () => {
+  await fetch("/api/logout", {
+    method: "POST",
+  });
+
+  window.location.href = "/";
+};
+
 export default function DeveloperPanel() {
   const [tasks, setTasks] = useState<Task[]>([]);
 
@@ -31,12 +39,20 @@ export default function DeveloperPanel() {
       {/* Header with Profile Button */}
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">Developer Dashboard</h1>
-        <Link
-          href="/developer/profile"
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-        >
-          My Profile
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/developer/profile"
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+          >
+            My Profile
+          </Link>
+          <button
+            onClick={handleLogout}
+            className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
+          >
+            Logout
+          </button>
+        </div>
       </div>
 
       {/* Task Cards */}
