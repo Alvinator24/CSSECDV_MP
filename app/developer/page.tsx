@@ -9,8 +9,12 @@ export default async function AdminPanel() {
 
   const user = token ? verifyToken(token) : null;
 
-  if (!user) {
+   if (!user || typeof user === "string" || !("role" in user)) {
     redirect("/");
+  }
+
+  if (user.role !== "developer") {
+    redirect(`/${user.role}`);
   }
 
   return <DeveloperPanelClient />;

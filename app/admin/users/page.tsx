@@ -9,8 +9,12 @@ export default async function AdminUsers() {
 
   const user = token ? verifyToken(token) : null;
 
-  if (!user) {
+  if (!user || typeof user === "string" || !("role" in user)) {
     redirect("/");
+  }
+
+  if (user.role !== "admin") {
+    redirect(`/${user.role}`);
   }
 
   return <AdminUsersClient />;
