@@ -50,7 +50,7 @@ export default function DeveloperPanel() {
         <h1 className="text-3xl font-bold">Developer Dashboard</h1>
         <div className="flex items-center gap-3">
           <Link
-            href="/developer/profile"
+            href="/profile"
             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
           >
             My Profile
