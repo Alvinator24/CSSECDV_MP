@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Plus } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 type Project = {
   id: number;
@@ -16,6 +17,8 @@ export default function ManagerPanel() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const router = useRouter();
 
   const handleLogout = async () => {
     await fetch("/api/logout", { method: "POST" });
@@ -41,23 +44,6 @@ export default function ManagerPanel() {
 
     fetchProjects();
   }, []);
-
-  // const handleCreateProject = (e: any) => {
-  //   e.preventDefault();
-  //   setLoading(true);
-
-  //   const newProject: Project = {
-  //     id: Date.now(),
-  //     title,
-  //     description,
-  //   };
-
-  //   setProjects((prev) => [...prev, newProject]);
-  //   setTitle("");
-  //   setDescription("");
-  //   setShowModal(false);
-  //   setLoading(false);
-  // };
 
   const handleCreateProject = async (e: any) => {
     e.preventDefault();
@@ -127,6 +113,7 @@ export default function ManagerPanel() {
           {projects.map((project) => (
             <div
               key={project.id}
+              onClick={() => router.push(`/manager/project/${project.id}`)}
               className="border rounded-2xl p-6 shadow-sm hover:shadow-md transition"
             >
               <h2 className="text-xl font-semibold mb-2">{project.title}</h2>
