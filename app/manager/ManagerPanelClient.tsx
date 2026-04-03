@@ -2,11 +2,11 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Plus } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 type Project = {
-  id: number;
+  id: string;
   title: string;
   description: string;
 };
@@ -14,6 +14,8 @@ type Project = {
 export default function ManagerPanel() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [showModal, setShowModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteProjectId, setDeleteProjectId] = useState<string | null>(null);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
@@ -79,6 +81,26 @@ export default function ManagerPanel() {
     }
   };
 
+  const handleDeleteProject = async () => {
+    if (!deleteProjectId) return;
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/projects/${deleteProjectId}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to delete project");
+
+      setProjects((prev) => prev.filter((p) => p.id !== deleteProjectId));
+      setDeleteProjectId(null);
+      setShowDeleteModal(false);
+    } catch (err: any) {
+      console.log(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white p-6">
       {/* Header */}
@@ -113,11 +135,30 @@ export default function ManagerPanel() {
           {projects.map((project) => (
             <div
               key={project.id}
-              onClick={() => router.push(`/manager/project/${project.id}`)}
               className="border rounded-2xl p-6 shadow-sm hover:shadow-md transition"
             >
               <h2 className="text-xl font-semibold mb-2">{project.title}</h2>
               <p className="text-gray-500 mb-4">{project.description}</p>
+
+              <div className="flex justify-between items-center">
+                <button
+                  onClick={() => router.push(`/manager/project/${project.id}`)}
+                  className="text-blue-600 hover:underline"
+                >
+                  View
+                </button>
+
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation(); // prevent card click
+                    setDeleteProjectId(String(project.id));
+                    setShowDeleteModal(true);
+                  }}
+                  className="text-red-600 hover:text-red-800 flex items-center gap-1"
+                >
+                  <Trash2 className="w-4 h-4" /> Delete
+                </button>
+              </div>
             </div>
           ))}
         </div>
@@ -171,6 +212,32 @@ export default function ManagerPanel() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-2xl w-full max-w-sm">
+            <h2 className="text-xl font-bold mb-4 text-red-600">Confirm Delete</h2>
+            <p className="mb-6">
+              Are you sure you want to delete this project? This action cannot be undone.
+            </p>
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                className="px-4 py-2 rounded-lg border"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteProject}
+                disabled={loading}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition disabled:opacity-50"
+              >
+                {loading ? "Deleting..." : "Delete"}
+              </button>
+            </div>
           </div>
         </div>
       )}
