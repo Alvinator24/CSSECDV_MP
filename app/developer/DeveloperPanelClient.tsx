@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 type Task = {
   id: number;
@@ -19,20 +20,28 @@ const handleLogout = async () => {
 };
 
 export default function DeveloperPanel() {
+  const router = useRouter();
   const [tasks, setTasks] = useState<Task[]>([]);
 
-  useEffect(() => {
-    const fetchTasks = async () => {
-      const assignedTasks: Task[] = [
-        // Example tasks
-        { id: 1, title: "Fix login bug", description: "Error on login page", status: "in_progress" },
-        { id: 2, title: "Update readme", description: "Add setup instructions", status: "open" },
-      ];
-      setTasks(assignedTasks);
-    };
+    useEffect(() => {
+      const fetchTasks = async () => {
+        try {
+          const res = await fetch("/api/tasks", { cache: "no-store" });
 
-    fetchTasks();
-  }, []);
+          const data = await res.json();
+
+          if (!res.ok) {
+            throw new Error(data.error || "Failed to fetch tasks");
+          }
+
+          setTasks(data);
+        } catch (err: any) {
+          console.log(err.message);
+        }
+      };
+
+      fetchTasks();
+    }, []);
 
   return (
     <div className="min-h-screen bg-white p-6">
@@ -61,6 +70,7 @@ export default function DeveloperPanel() {
           {tasks.map((task) => (
             <div
               key={task.id}
+              onClick={() => router.push(`/developer/task/${task.id}`)}
               className="border rounded-2xl p-6 shadow-sm hover:shadow-md transition"
             >
               <h2 className="text-xl font-semibold mb-2">Title: {task.title}</h2>
