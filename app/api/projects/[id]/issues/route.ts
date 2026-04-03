@@ -14,7 +14,7 @@ async function requireAuth() {
   return user;
 }
 
-export async function GET({ params }: { params: { id: string } }) {
+export async function GET(req: Request, context: { params: Promise<{ id: string }> }) {
   try {
     const user = await requireAuth();
 
@@ -25,7 +25,8 @@ export async function GET({ params }: { params: { id: string } }) {
       );
     }
 
-    const projectId = params.id;
+    const { id } = await context.params;
+    const projectId = id;
 
     const { data, error } = await supabaseServer
       .from("issues")
@@ -49,7 +50,7 @@ export async function GET({ params }: { params: { id: string } }) {
   }
 }
 
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+export async function POST(req: Request, context: { params: Promise<{ id: string }> }) {
   try {
     const user = await requireAuth();
 
@@ -60,10 +61,10 @@ export async function POST(req: Request, { params }: { params: { id: string } })
       );
     }
 
-    const projectId = params.id;
+     const { id: projectId } = await context.params;
     const body = await req.json();
 
-    const { title, description } = body;
+    const { title, description, priority, assigned_to } = body;
 
     if (!title || !description) {
       return NextResponse.json(
@@ -80,6 +81,8 @@ export async function POST(req: Request, { params }: { params: { id: string } })
           description,
           status: "open",
           project_id: projectId,
+          priority,
+          assigned_to,
           created_by: user.email,
         },
       ])

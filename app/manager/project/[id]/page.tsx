@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { verifyToken } from "@/lib/jwt";
 import ProjectPageClient from "./ProjectPageClient";
 
-export default async function ProjectPage({ params }: { params: { id: string }; }) {
+export default async function ProjectPage() {
   const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value;
 
@@ -13,5 +13,5 @@ export default async function ProjectPage({ params }: { params: { id: string }; 
   if (!user) redirect("/");
   if (user.role !== "manager") redirect(`/${user.role}`);
 
-  return <ProjectPageClient projectId={params.id} />;
+  return <ProjectPageClient />;
 }
