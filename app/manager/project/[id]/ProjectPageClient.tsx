@@ -10,6 +10,7 @@ type Issue = {
   description: string;
   priority: string;
   status: string;
+  assigned_to: string;
 };
 
 export default function ProjectPageClient() {
@@ -94,7 +95,6 @@ export default function ProjectPageClient() {
 
         setIssues((prev) => [data, ...prev]);
 
-        // Reset form
         setTitle("");
         setDescription("");
         setPriority("");
@@ -342,6 +342,23 @@ export default function ProjectPageClient() {
                 <option value="medium">Medium</option>
                 <option value="high">High</option>
                 </select>
+
+                <div>
+                <label className="block mb-1 font-semibold">Assign to</label>
+                <select
+                    value={assignedTo}
+                    onChange={(e) => setAssignedTo(e.target.value)}
+                    className="w-full border rounded p-2 bg-white"
+                    required
+                >
+                    <option value="">Select developer</option>
+                    {developers.map((dev) => (
+                    <option key={dev.email} value={dev.email}>
+                        {dev.firstname} {dev.lastname}
+                    </option>
+                    ))}
+                </select>
+                </div>
 
                 <div className="flex justify-end gap-2">
                 <button
