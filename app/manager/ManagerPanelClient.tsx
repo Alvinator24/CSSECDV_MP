@@ -8,7 +8,6 @@ type Project = {
   id: number;
   title: string;
   description: string;
-  status: string;
 };
 
 export default function ManagerPanel() {
@@ -25,33 +24,73 @@ export default function ManagerPanel() {
 
   useEffect(() => {
     const fetchProjects = async () => {
-      // Example projects, replace with API fetch if needed
-      const assignedProjects: Project[] = [
-        { id: 1, title: "Website Redesign", description: "Update homepage UI", status: "in_progress" },
-        { id: 2, title: "Marketing Campaign", description: "Launch social ads", status: "open" },
-      ];
-      setProjects(assignedProjects);
+      try {
+        const res = await fetch("/api/projects", { cache: "no-store" });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.error || "Failed to fetch projects");
+        }
+
+        setProjects(data);
+      } catch (err: any) {
+        console.log(err.message);
+      }
     };
 
     fetchProjects();
   }, []);
 
-  const handleCreateProject = (e: any) => {
+  // const handleCreateProject = (e: any) => {
+  //   e.preventDefault();
+  //   setLoading(true);
+
+  //   const newProject: Project = {
+  //     id: Date.now(),
+  //     title,
+  //     description,
+  //   };
+
+  //   setProjects((prev) => [...prev, newProject]);
+  //   setTitle("");
+  //   setDescription("");
+  //   setShowModal(false);
+  //   setLoading(false);
+  // };
+
+  const handleCreateProject = async (e: any) => {
     e.preventDefault();
     setLoading(true);
 
-    const newProject: Project = {
-      id: Date.now(),
-      title,
-      description,
-      status: "open",
-    };
+    try {
+      const res = await fetch("/api/projects", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          title,
+          description,
+        }),
+      });
 
-    setProjects((prev) => [...prev, newProject]);
-    setTitle("");
-    setDescription("");
-    setShowModal(false);
-    setLoading(false);
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to create project");
+      }
+
+      setProjects((prev) => [data, ...prev]);
+
+      setTitle("");
+      setDescription("");
+      setShowModal(false);
+    } catch (err: any) {
+      console.log(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -92,17 +131,6 @@ export default function ManagerPanel() {
             >
               <h2 className="text-xl font-semibold mb-2">{project.title}</h2>
               <p className="text-gray-500 mb-4">{project.description}</p>
-              <span
-                className={`px-3 py-1 rounded-full text-white text-sm ${
-                  project.status === "in_progress"
-                    ? "bg-yellow-500"
-                    : project.status === "open"
-                    ? "bg-blue-500"
-                    : "bg-green-500"
-                }`}
-              >
-                {project.status}
-              </span>
             </div>
           ))}
         </div>
