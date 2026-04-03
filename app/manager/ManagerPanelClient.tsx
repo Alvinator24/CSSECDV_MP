@@ -16,6 +16,8 @@ export default function ManagerPanel() {
   const [showModal, setShowModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteProjectId, setDeleteProjectId] = useState<string | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editProject, setEditProject] = useState<Project | null>(null);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
@@ -101,6 +103,41 @@ export default function ManagerPanel() {
     }
   };
 
+  const handleUpdateProject = async (e: any) => {
+      e.preventDefault();
+      if (!editProject) return;
+
+      setLoading(true);
+
+      try {
+        const res = await fetch(`/api/projects/${editProject.id}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            title,
+            description,
+          }),
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+
+        setProjects((prev) =>
+          prev.map((p) => (p.id === editProject.id ? data : p))
+        );
+
+        setShowEditModal(false);
+        setEditProject(null);
+      } catch (err: any) {
+        console.log(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
   return (
     <div className="min-h-screen bg-white p-6">
       {/* Header */}
@@ -146,6 +183,19 @@ export default function ManagerPanel() {
                   className="text-blue-600 hover:underline"
                 >
                   View
+                </button>
+
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setEditProject(project);
+                    setTitle(project.title);
+                    setDescription(project.description);
+                    setShowEditModal(true);
+                  }}
+                  className="text-yellow-600 hover:text-yellow-800"
+                >
+                  Edit
                 </button>
 
                 <button
@@ -241,6 +291,49 @@ export default function ManagerPanel() {
           </div>
         </div>
       )}
+
+      {showEditModal && (
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div className="bg-white p-6 rounded-2xl w-full max-w-md">
+          <h2 className="text-2xl font-bold mb-4">Edit Project</h2>
+
+          <form onSubmit={handleUpdateProject} className="space-y-4">
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              required
+              className="w-full border rounded-lg px-3 py-2"
+            />
+
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              required
+              className="w-full border rounded-lg px-3 py-2"
+            />
+
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setShowEditModal(false)}
+                className="px-4 py-2 border rounded-lg"
+              >
+                Cancel
+              </button>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="px-4 py-2 bg-yellow-600 text-white rounded-lg"
+              >
+                {loading ? "Updating..." : "Update"}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    )}
     </div>
   );
 }
