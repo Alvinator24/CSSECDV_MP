@@ -58,7 +58,7 @@ export async function PATCH(req: Request) {
 
     const { data: dbUser } = await supabaseServer
       .from("users")
-      .select("user_id, password")
+      .select("user_id, password, password_updated_at")
       .eq("email", user.email)
       .single();
 
@@ -74,11 +74,24 @@ export async function PATCH(req: Request) {
         { status: 401 }
       );
     }
+
+    const lastChanged = new Date(dbUser.password_updated_at);
+    const now = new Date();
+
+    const hoursSinceChange = (now.getTime() - lastChanged.getTime()) / 1000 / 3600;
+
+    if (hoursSinceChange < 24) {
+      return NextResponse.json(
+        { error: "Password must be at least 24 hours old before changing" },
+        { status: 400 }
+      );
+    }
+
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
     const { error } = await supabaseServer
       .from("users")
-      .update({ password: hashedPassword })
+      .update({ password: hashedPassword, password_updated_at: new Date().toISOString() })
       .eq("user_id", dbUser.user_id);
 
     await logAudit({
