@@ -48,6 +48,16 @@ export async function POST(req: Request) {
 
     if (updateError) console.error("Failed to update login attempts:", updateError.message);
 
+    await logAudit({
+      user: user.email,
+      action: "FAILED_LOGIN",
+      entity: "auth",
+      details: {
+        failedAttempts,
+        locked: failedAttempts >= MAX_ATTEMPTS,
+      },
+    });
+
     return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
   }
 
