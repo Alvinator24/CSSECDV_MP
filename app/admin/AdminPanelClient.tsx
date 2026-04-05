@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Users, FileText, Settings, Contact } from "lucide-react";
+import { Users, FileText, Contact } from "lucide-react";
 
 export default function ManagerHome() {
   return (
@@ -21,13 +21,6 @@ export default function ManagerHome() {
         >
           <FileText size={40} />
           <span className="mt-2 font-semibold">Logs</span>
-        </Link>
-        <Link
-          href="/admin/settings"
-          className="flex flex-col items-center p-6 bg-white shadow rounded hover:shadow-lg transition"
-        >
-          <Settings size={40} />
-          <span className="mt-2 font-semibold">Settings</span>
         </Link>
         <Link
           href="/profile"
