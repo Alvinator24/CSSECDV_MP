@@ -1,18 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabase";
-import { cookies } from "next/headers";
-import { verifyToken } from "@/lib/jwt";
-
-async function requireAuth() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("token")?.value;
-  if (!token) throw new Error("Unauthorized");
-
-  const user = verifyToken(token);
-  if (!user) throw new Error("Unauthorized");
-
-  return user;
-}
+import { requireAuth } from "@/lib/auth";
 
 export async function GET(req: Request) {
   try {
