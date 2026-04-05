@@ -26,7 +26,7 @@ export default function DeveloperPanel() {
     useEffect(() => {
       const fetchTasks = async () => {
         try {
-          const res = await fetch("/api/tasks", { cache: "no-store" });
+          const res = await fetch("/api/issues", { cache: "no-store" });
 
           const data = await res.json();
 

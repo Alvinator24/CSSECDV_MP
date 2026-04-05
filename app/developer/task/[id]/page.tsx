@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { verifyToken } from "@/lib/jwt";
-import TaskPanelClient from "./TaskPanelClient";
+import CommentsSection from "./TaskPanelClient";
 
 export default async function AdminPanel() {
   const cookieStore = await cookies();
@@ -17,5 +17,5 @@ export default async function AdminPanel() {
     redirect(`/${user.role}`);
   }
 
-  return <TaskPanelClient />;
+  return <CommentsSection />;
 }
