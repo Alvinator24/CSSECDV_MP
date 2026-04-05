@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { verifyToken } from "@/lib/jwt";
 import { z } from "zod";
 import bcrypt from "bcrypt";
+import { logAudit } from "@/lib/audit";
 
 const createUserSchema = z.object({
   email: z.email("Invalid email"),
@@ -59,7 +60,7 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
-    await requireAuth();
+    const user = await requireAuth();
     const body = await req.json();
     const result = createUserSchema.safeParse(body);
 
@@ -86,6 +87,13 @@ export async function POST(req: Request) {
       ])
       .select()
       .single();
+
+    await logAudit({
+      user: user.email,
+      action: "CREATE",
+      entity: "new user",
+      details: { firstname, lastname, email },
+    });
 
     if (error) {
       return NextResponse.json(

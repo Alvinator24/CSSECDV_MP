@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { verifyToken } from "@/lib/jwt";
 import bcrypt from "bcrypt";
 import { z } from "zod";
+import { logAudit } from "@/lib/audit";
 
 async function requireAuth() {
   const cookieStore = await cookies();
@@ -91,6 +92,12 @@ export async function PATCH(req: Request) {
       .from("users")
       .update({ password: hashedPassword })
       .eq("user_id", dbUser.user_id);
+
+    await logAudit({
+      user: user.email,
+      action: "UPDATE",
+      entity: "password",
+    });
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });

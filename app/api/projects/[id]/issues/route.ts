@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabase";
 import { cookies } from "next/headers";
 import { verifyToken } from "@/lib/jwt";
+import { logAudit } from "@/lib/audit";
 
 async function requireAuth() {
   const cookieStore = await cookies();
@@ -95,6 +96,14 @@ export async function POST(req: Request, context: { params: Promise<{ id: string
         { status: 500 }
       );
     }
+
+    await logAudit({
+      user: user.email,
+      action: "CREATE",
+      entity: "issue",
+      entityId: data.id,
+      details: { title },
+    });
 
     return NextResponse.json(data, { status: 201 });
   } catch (err: any) {

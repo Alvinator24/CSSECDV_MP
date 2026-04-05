@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabase";
 import { cookies } from "next/headers";
 import { verifyToken } from "@/lib/jwt";
+import { logAudit } from "@/lib/audit";
 
 async function requireAuth() {
   const cookieStore = await cookies();
@@ -59,6 +60,13 @@ export async function PUT(req: Request, context: { params: Promise<{ id: string 
       );
     }
 
+    await logAudit({
+      user: user.email,
+      action: "UPDATE",
+      entity: "comment",
+      details: { content },
+    });
+
     return NextResponse.json(data, { status: 200 });
   } catch (err: any) {
     return NextResponse.json(
@@ -97,6 +105,12 @@ export async function DELETE(req: Request, context: { params: Promise<{ id: stri
         { status: 500 }
       );
     }
+
+    await logAudit({
+      user: user.email,
+      action: "DELETE",
+      entity: "comment",
+    });
 
     return NextResponse.json(
       { message: "Comment deleted" },
