@@ -15,6 +15,12 @@ export async function POST(req: Request) {
     const parsed = resetPasswordSchema.safeParse(body);
 
     if (!parsed.success) {
+      await logAudit({
+            user: body.email,
+            action: "FAILED_PASSWORD_UPDATE",
+            entity: "auth",
+            details: { reason: "Input validation failed", errors: parsed.error.issues },
+          });
       return NextResponse.json({ error: parsed.error }, { status: 400 });
     }
 

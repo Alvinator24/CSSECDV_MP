@@ -48,6 +48,15 @@ export async function PATCH(req: Request) {
     const parsed = updatePasswordSchema.safeParse(body);
 
     if (!parsed.success) {
+      await logAudit({
+        user: user.email,
+        action: "FAILED_PASSWORD_CHANGE",
+        entity: "auth",
+        details: {
+          reason: "Input validation failed",
+          errors: parsed.error.issues
+        },
+      });
       return NextResponse.json(
         { error: parsed.error },
         { status: 400 }

@@ -54,6 +54,15 @@ export async function POST(req: Request) {
     const result = createUserSchema.safeParse(body);
 
     if (!result.success) {
+      await logAudit({
+        user: user.email,
+        action: "FAILED_ACCOUNT_CREATION",
+        entity: "auth",
+        details: {
+          reason: "Input validation failed",
+          errors: result.error.issues
+        },
+      });
       return NextResponse.json(
         { error: result.error },
         { status: 400 }
