@@ -38,6 +38,12 @@ export default function ProfilePage() {
     setLoading(true);
     setMessage("");
 
+    if (currentPassword === newPassword) {
+      setMessage("New password cannot be the same as current password");
+      setLoading(false);
+      return;
+    }
+
     try {
       const res = await fetch("/api/users/me", {
         method: "PATCH",
