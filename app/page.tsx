@@ -25,15 +25,32 @@ export default function LoginPage() {
 
       const data = await res.json();
 
+      const date = new Date(data.last_login);
+      const formattedDate = date.toLocaleString("en-US",
+        {
+          month: "long",
+          day: "numeric",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: true,
+          timeZone: "Asia/Manila"
+        }
+      )
+
       if (res.ok) {
-        setMessage("Login successful!");
+        setMessage(`Welcome! Your last login was ${formattedDate}`);
+
+        setTimeout(() => {
+          if (data.role === "admin") router.push("/admin");
+          else if (data.role === "manager") router.push("/manager");
+          else if (data.role === "developer") router.push("/developer");
+        }, 3000);
       } else {
         setMessage(data.error || "Login failed");
       }
 
-      if (data.role === "admin") router.push("/admin");
-      else if (data.role === "manager") router.push("/manager");
-      else if (data.role === "developer") router.push("/developer");
     } catch (err) {
       setMessage("Something went wrong");
     }
