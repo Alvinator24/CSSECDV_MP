@@ -9,6 +9,7 @@ type User = {
   lastname: string;
   email: string;
   role: string;
+  favoriteSong: string;
 };
 
 type CreateUserInput = {
@@ -17,6 +18,7 @@ type CreateUserInput = {
   email: string;
   password: string;
   role: string;
+  favoriteSong: string;
 };
 
 export default function AdminUsersClient() {
@@ -27,6 +29,7 @@ export default function AdminUsersClient() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("");
+  const [favoriteSong, setFavoriteSong] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -39,8 +42,6 @@ export default function AdminUsersClient() {
         if (!res.ok) {
           throw new Error(data.error || "Failed to fetch users");
         }
-
-        // console.log(data)
 
         setUsers(data);
       } catch (err: any) {
@@ -70,6 +71,7 @@ export default function AdminUsersClient() {
       email,
       password,
       role,
+      favoriteSong
     };
 
     try {
@@ -93,6 +95,7 @@ export default function AdminUsersClient() {
       setEmail("");
       setPassword("");
       setRole("");
+      setFavoriteSong("");
       setShowModal(false);
     } catch (err: any) {
       setError(err.message);
@@ -213,6 +216,17 @@ export default function AdminUsersClient() {
                   <option value="manager">Manager</option>
                   <option value="developer">Developer</option>
                 </select>
+              </div>
+
+              <div>
+                <label className="block mb-1 font-medium">Title of your favorite song</label>
+                <input
+                  type="text"
+                  value={favoriteSong}
+                  onChange={(e) => setFavoriteSong(e.target.value)}
+                  required
+                  className="w-full border rounded-lg px-3 py-2"
+                />
               </div>
 
               <div className="flex justify-end gap-2">

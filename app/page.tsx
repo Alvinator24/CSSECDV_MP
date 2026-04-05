@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function LoginPage() {
   const [email, setEmail] = useState<string>("");
@@ -67,6 +68,10 @@ export default function LoginPage() {
         <button className="bg-green-800 text-white p-2 rounded cursor-pointer">
           Login
         </button>
+
+        <Link href="/forgot">
+          <span><u>Forgot password?</u></span>
+        </Link>
 
         {message && (
           <p className="text-sm text-center">{message}</p>

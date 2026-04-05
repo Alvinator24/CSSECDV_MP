@@ -13,7 +13,8 @@ const createUserSchema = z.object({
               .min(8, "Password must be at least 8 characters")
               .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/,
               "Password must include uppercase, lowercase, number, and special character"),
-  role: z.string("Must be a valid role")
+  role: z.string("Must be a valid role"),
+  favoriteSong: z.string()
 });
 
 export async function GET() {
@@ -59,7 +60,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const { firstname, lastname, email, password, role } = result.data;
+    const { firstname, lastname, email, password, role, favoriteSong } = result.data;
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const { data, error } = await supabaseServer
@@ -70,7 +71,8 @@ export async function POST(req: Request) {
           lastname,
           email,
           password: hashedPassword,
-          role
+          role,
+          song: favoriteSong.toLowerCase()
         },
       ])
       .select()
