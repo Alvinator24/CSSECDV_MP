@@ -28,6 +28,7 @@ export default function ProjectPageClient() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
+  const [status, setStatus] = useState("");
 
   useEffect(() => {
     if (!projectId) return;
@@ -156,6 +157,7 @@ export default function ProjectPageClient() {
                 title,
                 description,
                 priority,
+                status,
                 assigned_to: assignedTo,
                 }),
             }
@@ -212,6 +214,7 @@ export default function ProjectPageClient() {
                     setDescription(issue.description);
                     setPriority(issue.priority);
                     setAssignedTo("");
+                    setStatus(issue.status);
                     setShowEditModal(true);
                     }}
                     className="text-yellow-600 hover:text-yellow-800 text-sm font-medium"
@@ -358,6 +361,19 @@ export default function ProjectPageClient() {
                     </option>
                     ))}
                 </select>
+                </div>
+
+                <div className="mt-2">
+                  <label className="text-sm mr-2">Status:</label>
+                  <select
+                    value={status}
+                    onChange={(e) => setStatus(e.target.value)}
+                    className="border rounded px-2 py-1 text-sm"
+                  >
+                    <option value="open">open</option>
+                    <option value="in_progress">in progress</option>
+                    <option value="done">done</option>
+                  </select>
                 </div>
 
                 <div className="flex justify-end gap-2">
