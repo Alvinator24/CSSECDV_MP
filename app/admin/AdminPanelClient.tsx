@@ -4,6 +4,14 @@ import Link from "next/link";
 import { Users, FileText, Contact } from "lucide-react";
 
 export default function ManagerHome() {
+  const handleLogout = async () => {
+    await fetch("/api/logout", {
+      method: "POST",
+    });
+
+    window.location.href = "/";
+  };
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center space-y-6">
       <h1 className="text-3xl font-bold">Admin Panel</h1>
@@ -29,6 +37,14 @@ export default function ManagerHome() {
           <Contact size={40} />
           <span className="mt-2 font-semibold">Profile</span>
         </Link>
+      </div>
+      <div>
+         <button
+            onClick={handleLogout}
+            className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
+          >
+            Logout
+          </button>
       </div>
     </div>
   );
