@@ -25,6 +25,8 @@ export default function LoginPage() {
 
       const data = await res.json();
 
+      console.log(data)
+
       const date = new Date(data.last_login);
       const formattedDate = date.toLocaleString("en-US",
         {
@@ -39,6 +41,14 @@ export default function LoginPage() {
         }
       )
 
+      if (!res.ok) {
+        if (res.status === 403) {
+          setMessage("Your account has been locked for 1 hour");
+        } else {
+          setMessage("Login failed");
+        }
+      }
+
       if (res.ok) {
         setMessage(`Welcome! Your last login was ${formattedDate}`);
 
@@ -47,8 +57,6 @@ export default function LoginPage() {
           else if (data.role === "manager") router.push("/manager");
           else if (data.role === "developer") router.push("/developer");
         }, 3000);
-      } else {
-        setMessage(data.error || "Login failed");
       }
 
     } catch (err) {
