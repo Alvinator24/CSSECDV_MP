@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { verifyToken } from "@/lib/jwt";
 import AdminPanelClient from "./AdminPanelClient";
+import { logAudit } from "@/lib/audit";
 
 export default async function AdminPanel() {
   const cookieStore = await cookies();
@@ -14,6 +15,14 @@ export default async function AdminPanel() {
   }
 
   if (user.role !== "admin") {
+    await logAudit({
+        user: user.email,
+        action: "ACCESS_DENIED",
+        entity: "auth",
+        details: {
+          reason: "Accessing pages that are not for your role is prohibited"
+        },
+      });
     redirect(`/${user.role}`);
   }
 

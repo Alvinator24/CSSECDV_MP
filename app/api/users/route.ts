@@ -22,6 +22,14 @@ export async function GET() {
     const user = await requireAuth();
 
     if (!["admin", "manager"].includes(user.role)) {
+      await logAudit({
+        user: user.email,
+        action: "ACCESS_DENIED",
+        entity: "auth",
+        details: {
+          reason: "Accessing an API without authorization is prohibited"
+        },
+      });
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
