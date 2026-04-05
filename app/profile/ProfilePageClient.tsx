@@ -13,6 +13,7 @@ type User = {
 export default function ProfilePage() {
   const [user, setUser] = useState<User | null>(null);
   const [currentPassword, setCurrentPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
@@ -38,11 +39,11 @@ export default function ProfilePage() {
     setMessage("");
 
     try {
-      const res = await fetch("/api/users/me/password", {
+      const res = await fetch("/api/users/me", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ currentPassword, newPassword }),
+        body: JSON.stringify({ currentPassword, newPassword, confirmPassword }),
       });
 
       const data = await res.json();
@@ -51,6 +52,7 @@ export default function ProfilePage() {
       setMessage("Password updated successfully!");
       setCurrentPassword("");
       setNewPassword("");
+      setConfirmPassword("");
     } catch (err: any) {
       setMessage(err.message);
     } finally {
@@ -91,6 +93,14 @@ export default function ProfilePage() {
           placeholder="New password"
           value={newPassword}
           onChange={(e) => setNewPassword(e.target.value)}
+          className="w-full border p-2 rounded"
+          required
+        />
+        <input
+          type="password"
+          placeholder="Confirm password"
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
           className="w-full border p-2 rounded"
           required
         />
