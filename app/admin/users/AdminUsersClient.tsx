@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Plus } from "lucide-react";
+import { z } from "zod";
 
 type User = {
   id: string;
@@ -12,14 +13,18 @@ type User = {
   favoriteSong: string;
 };
 
-type CreateUserInput = {
-  firstname: string;
-  lastname: string;
-  email: string;
-  password: string;
-  role: string;
-  favoriteSong: string;
-};
+const createUserSchema = z.object({
+  firstname: z.string().min(1, "First name is required"),
+  lastname: z.string().min(1, "Last name is required"),
+  email: z.email("Invalid email address"),
+  password: z.string().min(8, "Password must be at least 8 characters")
+                      .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/,
+                      "Password must include uppercase, lowercase, number, and special character"),
+  role: z.string().min(4, "Admin, Manager, or Developer only"),
+  favoriteSong: z.string().min(1, "Favorite song is required"),
+});
+
+type CreateUserInput = z.infer<typeof createUserSchema>;
 
 export default function AdminUsersClient() {
   const [users, setUsers] = useState<User[]>([]);
@@ -60,14 +65,16 @@ export default function AdminUsersClient() {
     setLoading(true);
     setError("");
 
-    const newUser: CreateUserInput = {
-      firstname,
-      lastname,
-      email,
-      password,
-      role,
-      favoriteSong
-    };
+  const formData = { firstname, lastname, email, password, role, favoriteSong };
+
+  const parseResult = createUserSchema.safeParse(formData);
+
+  if (!parseResult.success) {
+    const messages = parseResult.error.issues.map((err) => err.message).join(", ");
+    setError(messages);
+    setLoading(false);
+    return;
+  }
 
     try {
       const res = await fetch("/api/users", {
@@ -75,7 +82,7 @@ export default function AdminUsersClient() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(newUser),
+        body: JSON.stringify(parseResult.data),
       });
 
       const data = await res.json();
