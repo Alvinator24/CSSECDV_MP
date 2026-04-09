@@ -80,6 +80,8 @@ export async function POST(req: Request) {
     httpOnly: true,
     path: "/",
     maxAge: 3600,
+    secure: true,
+    sameSite: "strict"
   });
 
   return res;
