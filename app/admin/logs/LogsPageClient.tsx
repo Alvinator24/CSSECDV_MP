@@ -116,7 +116,15 @@ export default function LogsPage() {
                   </td>
 
                   <td className="p-3 border">
-                    {new Date(log.created_at).toLocaleString()}
+                    {new Date(log.created_at).toLocaleString("en-PH", {
+                      timeZone: "Asia/Manila",
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      second: "2-digit"
+                    })}
                   </td>
                 </tr>
               ))}
