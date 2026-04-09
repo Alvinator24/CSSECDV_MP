@@ -5,7 +5,10 @@ import { supabaseServer } from "@/lib/supabase";
 import { logAudit } from "@/lib/audit";
 
 const resetPasswordSchema = z.object({
-  newPassword: z.string().min(8),
+  newPassword: z.string()
+  .min(8, "New password must be at least 8 characters")
+  .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/,
+  "New password must include uppercase, lowercase, number, and special character"),
 });
 
 export async function POST(req: Request) {
