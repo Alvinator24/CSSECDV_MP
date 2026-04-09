@@ -205,6 +205,9 @@ export default function ProjectPageClient() {
                 <span className="text-sm mt-1 inline-block ml-2">
                 Priority: {issue.priority}
                 </span>
+                <span className="text-sm mt-1 inline-block ml-2">
+                Assigned to: {issue.assigned_to}
+                </span>
 
                 <div className="flex justify-end gap-3 mt-4">
                 <button
@@ -213,7 +216,7 @@ export default function ProjectPageClient() {
                     setTitle(issue.title);
                     setDescription(issue.description);
                     setPriority(issue.priority);
-                    setAssignedTo("");
+                    setAssignedTo(issue.assigned_to);
                     setStatus(issue.status);
                     setShowEditModal(true);
                     }}

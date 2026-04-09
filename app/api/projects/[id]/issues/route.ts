@@ -19,7 +19,7 @@ export async function GET(req: Request, context: { params: Promise<{ id: string 
 
     const { data, error } = await supabaseServer
       .from("issues")
-      .select("id, title, description, status, priority, created_at")
+      .select("id, title, description, status, priority, assigned_to, created_at")
       .eq("project_id", projectId)
       .order("created_at", { ascending: false });
 
