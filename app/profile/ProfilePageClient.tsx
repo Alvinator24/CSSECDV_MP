@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { z } from "zod";
 
 type User = {
   user_id: string;
@@ -9,6 +10,15 @@ type User = {
   lastname: string;
   role: string;
 };
+
+const changePasswordSchema = z
+  .object({
+    newPassword: z.string()
+    .min(8, "Password must be at least 8 characters")
+    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/,
+    "Password must include uppercase, lowercase, number, and special character"),
+    confirmPassword: z.string(),
+  })
 
 export default function ProfilePage() {
   const [user, setUser] = useState<User | null>(null);
@@ -37,6 +47,13 @@ export default function ProfilePage() {
     e.preventDefault();
     setLoading(true);
     setMessage("");
+
+    const parsed = changePasswordSchema.safeParse({ newPassword, confirmPassword });
+    if (!parsed.success) {
+      const messages = parsed.error.issues.map((err) => err.message).join(", ");
+      setMessage(messages);
+      return;
+    }
 
     if (currentPassword === newPassword) {
       setMessage("New password cannot be the same as current password");

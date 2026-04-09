@@ -26,7 +26,8 @@ export default function ResetPasswordPage() {
 
     const parsed = resetPasswordSchema.safeParse({ newPassword, confirmPassword });
     if (!parsed.success) {
-      setMessage(parsed.error.message);
+      const messages = parsed.error.issues.map((err) => err.message).join(", ");
+      setMessage(messages);
       return;
     }
 
