@@ -13,5 +13,9 @@ export default async function LogsPage() {
     redirect("/");
   }
 
+  if (user.role !== "admin") {
+    redirect(`/${user.role}`);
+  }
+
   return <LogsPageClient />;
 }
