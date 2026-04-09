@@ -45,7 +45,7 @@ export default function LoginPage() {
         if (res.status === 403) {
           setMessage("Your account has been locked for 1 hour");
         } else {
-          setMessage("Login failed");
+          setMessage("Invalid email and/or password");
         }
       }
 
