@@ -32,6 +32,9 @@ export default function AdminUsersClient() {
   const [favoriteSong, setFavoriteSong] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [editRole, setEditRole] = useState("");
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -104,6 +107,41 @@ export default function AdminUsersClient() {
     }
   };
 
+  const handleUpdateRole = async (e: any) => {
+    e.preventDefault();
+    if (!selectedUser) return;
+
+    console.log(selectedUser)
+
+    setLoading(true);
+
+    try {
+      const res = await fetch(`/api/users`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email: selectedUser.email, role: editRole }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+
+      setUsers((prev) =>
+        prev.map((u) =>
+          u.email === selectedUser.email ? { ...u, role: editRole } : u
+        )
+      );
+
+      setShowEditModal(false);
+      setSelectedUser(null);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen p-6 bg-white">
       {/* Header */}
@@ -139,6 +177,18 @@ export default function AdminUsersClient() {
               </h2>
               <p className="text-gray-500">{user.email}</p>
               <p className="text-sm mt-2 capitalize">{user.role}</p>
+              <div className="flex justify-end mt-4">
+                <button
+                  onClick={() => {
+                    setSelectedUser(user);
+                    setEditRole(user.role);
+                    setShowEditModal(true);
+                  }}
+                  className="text-yellow-600 hover:text-yellow-800 text-sm"
+                >
+                  Edit Role
+                </button>
+              </div>
             </div>
           ))}
         </div>
@@ -249,6 +299,50 @@ export default function AdminUsersClient() {
           </div>
         </div>
       )}
+
+      {showEditModal && (
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div className="bg-white p-6 rounded-2xl w-full max-w-md">
+          <h2 className="text-2xl font-bold mb-4">Edit Role</h2>
+
+          {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
+
+          <form onSubmit={handleUpdateRole} className="space-y-4">
+            <div className="flex flex-col gap-2">
+              <label className="font-semibold">Select Role</label>
+              <select
+                value={editRole}
+                onChange={(e) => setEditRole(e.target.value)}
+                className="border rounded p-2 bg-white"
+                required
+              >
+                <option value="admin">Admin</option>
+                <option value="manager">Manager</option>
+                <option value="developer">Developer</option>
+              </select>
+            </div>
+
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setShowEditModal(false)}
+                className="px-4 py-2 rounded-lg border"
+              >
+                Cancel
+              </button>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="px-4 py-2 bg-yellow-600 text-white rounded-lg"
+              >
+                {loading ? "Updating..." : "Update"}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    )}
     </div>
   );
 }

@@ -117,3 +117,33 @@ export async function POST(req: Request) {
     );
   }
 }
+
+export async function PATCH(req: Request) {
+  try {
+    const user = await requireAuth();
+
+    if (user.role !== "admin") {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { email, role } = await req.json();
+
+    console.log(email)
+    console.log(role)
+
+    const { data, error } = await supabaseServer
+      .from("users")
+      .update({ role })
+      .eq("email", email)
+      .select()
+      .single();
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json(data);
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message }, { status: 401 });
+  }
+}
