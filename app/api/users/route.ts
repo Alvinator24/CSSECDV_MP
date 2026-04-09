@@ -147,3 +147,36 @@ export async function PATCH(req: Request) {
     return NextResponse.json({ error: err.message }, { status: 401 });
   }
 }
+
+export async function DELETE(req: Request) {
+  try {
+
+    const user = await requireAuth();
+
+    if (user.role !== "admin") {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    
+    const body = await req.json();
+    const { email } = body;
+
+    const { error } = await supabaseServer
+      .from("users")
+      .delete()
+      .eq("email", email);
+
+    if (error) {
+      return NextResponse.json(
+        { error: error.message },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({ message: "User deleted successfully" });
+  } catch (err: any) {
+    return NextResponse.json(
+      { error: err.message || "Something went wrong" },
+      { status: 500 }
+    );
+  }
+}

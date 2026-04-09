@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus } from "lucide-react";
+import { Plus, Trash2, Pencil } from "lucide-react";
 import { z } from "zod";
 
 type User = {
@@ -40,6 +40,8 @@ export default function AdminUsersClient() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [editRole, setEditRole] = useState("");
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<User | null>(null);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -141,6 +143,39 @@ export default function AdminUsersClient() {
     }
   };
 
+  const handleDeleteUser = async () => {
+    if (!userToDelete) return;
+
+    setLoading(true);
+    setError("");
+
+    try {
+      const res = await fetch("/api/users", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email: userToDelete.email }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to delete user");
+      }
+
+      setUsers((prev) => prev.filter((u) => u.id !== userToDelete.id));
+
+      setShowDeleteModal(false);
+      setUserToDelete(null);
+      window.location.reload();
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen p-6 bg-white">
       {/* Header */}
@@ -177,9 +212,18 @@ export default function AdminUsersClient() {
                     setEditRole(user.role);
                     setShowEditModal(true);
                   }}
-                  className="text-yellow-600 hover:text-yellow-800 text-sm"
+                  className="text-yellow-600 hover:text-yellow-800 text-sm mr-5"
                 >
-                  Edit Role
+                  <Pencil />
+                </button>
+                <button
+                  onClick={() => {
+                    setUserToDelete(user);
+                    setShowDeleteModal(true);
+                  }}
+                  className="text-red-600 hover:text-red-800 text-sm"
+                >
+                  <Trash2/>
                 </button>
               </div>
             </div>
@@ -333,6 +377,47 @@ export default function AdminUsersClient() {
               </button>
             </div>
           </form>
+        </div>
+      </div>
+    )}
+
+    {showDeleteModal && userToDelete && (
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div className="bg-white p-6 rounded-2xl w-full max-w-md">
+          <h2 className="text-2xl font-bold mb-4 text-red-600">
+            Delete User
+          </h2>
+
+          <p className="mb-4 text-gray-700">
+            Are you sure you want to delete{" "}
+            <span className="font-semibold">
+              {userToDelete.firstname} {userToDelete.lastname}
+            </span>?
+          </p>
+
+          {error && (
+            <p className="text-red-500 text-sm mb-2">{error}</p>
+          )}
+
+          <div className="flex justify-end gap-2">
+            <button
+              onClick={() => {
+                setShowDeleteModal(false);
+                setUserToDelete(null);
+              }}
+              className="px-4 py-2 rounded-lg border"
+            >
+              Cancel
+            </button>
+
+            <button
+              onClick={handleDeleteUser}
+              disabled={loading}
+              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50"
+            >
+              {loading ? "Deleting..." : "Delete"}
+            </button>
+          </div>
         </div>
       </div>
     )}
