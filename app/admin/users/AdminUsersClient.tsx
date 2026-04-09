@@ -55,14 +55,6 @@ export default function AdminUsersClient() {
     fetchUsers();
   }, []);
 
-  const handleLogout = async () => {
-    await fetch("/api/logout", {
-      method: "POST",
-    });
-
-    window.location.href = "/";
-  };
-
   const handleCreateUser = async (e: any) => {
     e.preventDefault();
     setLoading(true);
@@ -154,12 +146,6 @@ export default function AdminUsersClient() {
           >
             <Plus className="w-4 h-4" />
             New User
-          </button>
-          <button
-            onClick={handleLogout}
-            className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
-          >
-            Logout
           </button>
         </div>
       </div>
