@@ -45,6 +45,22 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
+    const { data: user } = await supabaseServer
+      .from("users")
+      .select("song")
+      .eq("email", body.email)
+      .single();
+
+    if (user!.song !== body.favoriteSong) {
+        await logAudit({
+        user: body.email,
+        action: "FAILED_LOGIN",
+        entity: "auth",
+        details: { reason: "Song does not match" },
+      });
+      return NextResponse.json({ error: "Song does not match" }, { status: 404 });
+    }
+
     const isReuse = await bcrypt.compare(newPassword, dbUser.password);
     if (isReuse) {
       await logAudit({
