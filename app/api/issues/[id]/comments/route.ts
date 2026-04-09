@@ -36,7 +36,7 @@ export async function POST(req: Request, context: { params: Promise<{ id: string
   try {
     const user = await requireAuth();
 
-    if (user.role !== "manager") {
+    if (user.role !== "developer") {
       throw new Error("Unauthorized");
     }
 

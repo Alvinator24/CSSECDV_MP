@@ -134,21 +134,43 @@ export async function PATCH(req: Request) {
 
     const { email, role } = await req.json();
 
-    console.log(email)
-    console.log(role)
+    const { data: oldUser, error: fetchError } = await supabaseServer
+      .from("users")
+      .select("email, role, user_id")
+      .eq("email", email)
+      .single();
 
-    const { data, error } = await supabaseServer
+    if (fetchError) {
+      return NextResponse.json({ error: fetchError.message }, { status: 500 });
+    }
+
+    const { data: updatedUser, error: updateError } = await supabaseServer
       .from("users")
       .update({ role })
       .eq("email", email)
       .select()
       .single();
 
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+    if (updateError) {
+      return NextResponse.json({ error: updateError.message }, { status: 500 });
     }
 
-    return NextResponse.json(data);
+    const changes: Record<string, { old: any; new: any }> = {};
+    if (oldUser.role !== updatedUser.role) {
+      changes.role = { old: oldUser.role, new: updatedUser.role };
+    }
+
+    if (Object.keys(changes).length > 0) {
+      await logAudit({
+        user: user.email,
+        action: "UPDATE",
+        entity: "user",
+        entityId: updatedUser.id,
+        details: changes,
+      });
+    }
+
+    return NextResponse.json(updatedUser);
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 401 });
   }
@@ -166,17 +188,32 @@ export async function DELETE(req: Request) {
     const body = await req.json();
     const { email } = body;
 
-    const { error } = await supabaseServer
+    const { data: oldUser, error: fetchError } = await supabaseServer
+      .from("users")
+      .select("user_id, firstname, lastname, email")
+      .eq("email", email)
+      .single();
+
+    if (fetchError) {
+      return NextResponse.json({ error: fetchError.message }, { status: 500 });
+    }
+
+    const { error: deleteError } = await supabaseServer
       .from("users")
       .delete()
       .eq("email", email);
 
-    if (error) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: 500 }
-      );
+    if (deleteError) {
+      return NextResponse.json({ error: deleteError.message }, { status: 500 });
     }
+
+    await logAudit({
+      user: user.email,
+      action: "DELETE",
+      entity: "user",
+      entityId: oldUser.user_id,
+      details: oldUser,
+    });
 
     return NextResponse.json({ message: "User deleted successfully" });
   } catch (err: any) {

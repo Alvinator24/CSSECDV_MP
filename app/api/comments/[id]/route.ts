@@ -23,20 +23,21 @@ export async function PUT(req: Request, context: { params: Promise<{ id: string 
       );
     }
 
-    const { data: existing } = await supabaseServer
+    const { data: oldComment, error: fetchError } = await supabaseServer
       .from("comments")
-      .select("created_by")
+      .select("*")
       .eq("id", commentId)
       .single();
 
-    if (existing?.created_by !== user.email) {
-      return NextResponse.json(
-        { error: "Forbidden" },
-        { status: 403 }
-      );
+    if (fetchError) {
+      return NextResponse.json({ error: fetchError.message }, { status: 500 });
     }
 
-    const { data, error } = await supabaseServer
+    if (oldComment?.created_by !== user.email) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    const { data: updatedComment, error: updateError } = await supabaseServer
       .from("comments")
       .update({
         content,
@@ -46,21 +47,26 @@ export async function PUT(req: Request, context: { params: Promise<{ id: string 
       .select()
       .single();
 
-    if (error) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: 500 }
-      );
+    if (updateError) {
+      return NextResponse.json({ error: updateError.message }, { status: 500 });
     }
 
-    await logAudit({
-      user: user.email,
-      action: "UPDATE",
-      entity: "comment",
-      details: { content },
-    });
+    const changes: Record<string, { old: any; new: any }> = {};
+    if (oldComment.content !== updatedComment.content) {
+      changes.content = { old: oldComment.content, new: updatedComment.content };
+    }
 
-    return NextResponse.json(data, { status: 200 });
+    if (Object.keys(changes).length > 0) {
+      await logAudit({
+        user: user.email,
+        action: "UPDATE",
+        entity: "comment",
+        entityId: commentId,
+        details: changes,
+      });
+    }
+
+    return NextResponse.json(updatedComment, { status: 200 });
   } catch (err: any) {
     return NextResponse.json(
       { error: err.message || "Unauthorized" },
@@ -79,35 +85,35 @@ export async function DELETE(req: Request, context: { params: Promise<{ id: stri
 
     const { id: commentId } = await context.params;
 
-    const { data: existing } = await supabaseServer
+    const { data: oldComment, error: fetchError } = await supabaseServer
       .from("comments")
-      .select("created_by")
+      .select("*")
       .eq("id", commentId)
       .single();
 
-    if (existing?.created_by !== user.email) {
-      return NextResponse.json(
-        { error: "Forbidden" },
-        { status: 403 }
-      );
+    if (fetchError) {
+      return NextResponse.json({ error: fetchError.message }, { status: 500 });
     }
 
-    const { error } = await supabaseServer
+    if (oldComment?.created_by !== user.email) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    const { error: deleteError } = await supabaseServer
       .from("comments")
       .delete()
       .eq("id", commentId);
 
-    if (error) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: 500 }
-      );
+    if (deleteError) {
+      return NextResponse.json({ error: deleteError.message }, { status: 500 });
     }
 
     await logAudit({
       user: user.email,
       action: "DELETE",
       entity: "comment",
+      entityId: commentId,
+      details: oldComment,
     });
 
     return NextResponse.json(
