@@ -6,6 +6,11 @@ import { requireAuth } from "@/lib/auth";
 export async function PUT(req: Request, context: { params: Promise<{ id: string }> }) {
   try {
     const user = await requireAuth();
+
+    if (user.role !== "developer") {
+      throw new Error("Unauthorized");
+    }
+
     const { id: commentId } = await context.params;
 
     const body = await req.json();
@@ -67,6 +72,11 @@ export async function PUT(req: Request, context: { params: Promise<{ id: string 
 export async function DELETE(req: Request, context: { params: Promise<{ id: string }> }) {
   try {
     const user = await requireAuth();
+
+    if (user.role !== "developer") {
+      throw new Error("Unauthorized");
+    }
+
     const { id: commentId } = await context.params;
 
     const { data: existing } = await supabaseServer
@@ -75,7 +85,7 @@ export async function DELETE(req: Request, context: { params: Promise<{ id: stri
       .eq("id", commentId)
       .single();
 
-    if (existing?.created_by !== user.email && user.role !== "manager") {
+    if (existing?.created_by !== user.email) {
       return NextResponse.json(
         { error: "Forbidden" },
         { status: 403 }

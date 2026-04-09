@@ -5,7 +5,11 @@ import { requireAuth } from "@/lib/auth";
 
 export async function GET(req: Request, context: { params: Promise<{ id: string }> }) {
   try {
-    await requireAuth();
+    const user = await requireAuth();
+
+    if (!["developer", "manager"].includes(user.role)) {
+      throw new Error("Unauthorized");
+    }
 
     const { id: issueId } = await context.params;
 
@@ -31,6 +35,10 @@ export async function GET(req: Request, context: { params: Promise<{ id: string 
 export async function POST(req: Request, context: { params: Promise<{ id: string }> }) {
   try {
     const user = await requireAuth();
+
+    if (user.role !== "manager") {
+      throw new Error("Unauthorized");
+    }
 
     const { id: issueId } = await context.params;
 
