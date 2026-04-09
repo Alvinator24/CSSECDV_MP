@@ -61,6 +61,12 @@ export async function POST(req: Request) {
     const body = await req.json();
     const result = createUserSchema.safeParse(body);
 
+    console.log(user.role)
+
+    if (user.role !== "admin") {
+      throw new Error("Unauthorized");
+    }
+
     if (!result.success) {
       await logAudit({
         user: user.email,
