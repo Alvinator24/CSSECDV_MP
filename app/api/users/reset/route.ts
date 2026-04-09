@@ -42,7 +42,7 @@ export async function POST(req: Request) {
         entity: "auth",
         details: { reason: "User does not exist" },
       });
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+      return NextResponse.json({ error: "Password reset instructions have been sent to your email if it exists" }, { status: 404 });
     }
 
     const { data: user } = await supabaseServer
